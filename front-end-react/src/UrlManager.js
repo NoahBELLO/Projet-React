@@ -41,19 +41,20 @@ function UrlManager() {
                         'Content-Type': 'application/json;charset=utf-8'
                     }
                 })
-                    .then(response => {
-                        // Pour récupérer le status, il faudrait ici conserver response.status
-                        // et ne pas lancer d'erreur immédiatement si response.ok === false.
-                        if (!response.ok) throw new Error("Réponse non OK");
+                    .then(async response => {
+                        console.log(response.status)
+                        if (response.status >= 400 && response.status < 500) {
+                            seterrorQuatreCent(prev => prev + 1);
+                        } else if (response.status >= 500) {
+                            seterrorCinqCent(prev => prev + 1);
+                        } else {
+                            setSuccessCount(prev => prev + 1);
+                        }
                         return response.json();
                     })
-                    .then(async (data) => {
-                        // Ici response.ok n'est pas disponible puisque la réponse a déjà été convertie
-                        // Pour classifier les erreurs HTTP, il est préférable de traiter cela dès la première étape.
-                        // Pour l'instant, on incrémente directement le succès.
-                        setSuccessCount(prev => prev + 1);
-                    })
+                    
                     .catch(error => {
+            
                         console.error("Erreur réseau :", error);
                         // On pourrait améliorer la classification en examinant error ou en traitant le status avant erreur
                         setUnknowError(prev => prev + 1);
