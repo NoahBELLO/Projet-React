@@ -17,6 +17,7 @@ function App() {
         headers: {}
       },
       context: {}
+      
     };
 
     // Appliquer les middlewares un par un
