@@ -150,7 +150,7 @@ const FormulaireMiddleware = () => {
         }
 
         console.log("Requête après middlewares :", req);
-
+        
         try {
             // Envoi réel de la requête
             const response = await fetch(req.url, {
@@ -272,7 +272,6 @@ const FormulaireMiddleware = () => {
 function Formulaire({ choixFormulaire }) {
     return (
         <div>
-            {console.log(choixFormulaire)}
             {choixFormulaire === 'formulaireAPI' && (<FormulaireAPI />)}
             {choixFormulaire === 'formulaireMiddleware' && (<FormulaireMiddleware />)}
         </div>
