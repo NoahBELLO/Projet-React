@@ -3,18 +3,16 @@ import React, { useState } from 'react';
 const MiddlewareManager = ({ setMiddlewares }) => {
   const [loadedFiles, setLoadedFiles] = useState([]);
 
-
-  
   const handleFilesChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-  
+
     for (const file of files) {
       if (loadedFiles.includes(file.name)) {
         console.warn(`Le middleware "${file.name}" est déjà chargé.`);
         continue;
       }
-  
+
       try {
         const rawCode = await readFileAsText(file);
         const transformedCode = rawCode.replace(/export\s+default/, 'module.exports =');
@@ -23,17 +21,17 @@ const MiddlewareManager = ({ setMiddlewares }) => {
         const func = new Function('module', 'exports', transformedCode);
         const module = { exports: {} };
         func(module, module.exports);
-  
+
         const middlewareFunction = module.exports;
-  
+
         if (typeof middlewareFunction !== 'function') {
           alert(`Le fichier ${file.name} ne contient pas une fonction middleware valide.`);
           continue;
         }
-  
+
         setMiddlewares((prev) => [...prev, middlewareFunction]);
         setLoadedFiles((prev) => [...prev, file.name]);
-  
+
         console.log(`Middleware "${file.name}" chargé avec succès.`);
       } catch (err) {
         alert(`Erreur lors du chargement de "${file.name}" : ${err.message}`);
@@ -41,7 +39,7 @@ const MiddlewareManager = ({ setMiddlewares }) => {
       }
     }
   };
-  
+
 
   const readFileAsText = (file) => {
     return new Promise((resolve, reject) => {
@@ -51,7 +49,7 @@ const MiddlewareManager = ({ setMiddlewares }) => {
       reader.readAsText(file);
     });
   };
-  
+
 
 
   const handleRemoveMiddleware = (index) => {
@@ -59,7 +57,7 @@ const MiddlewareManager = ({ setMiddlewares }) => {
     setLoadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  
+
   const handleResetMiddlewares = () => {
     setMiddlewares([]);
     setLoadedFiles([]);
@@ -68,14 +66,20 @@ const MiddlewareManager = ({ setMiddlewares }) => {
 
   return (
     <div style={{ marginTop: '1rem' }}>
-      <h3>Gestion des middlewares</h3>
+      <h2>Gestion des middlewares</h2>
 
-      <input
-        type="file"
-        accept=".js"
-        multiple
-        onChange={handleFilesChange}
-      />
+      <div className='containerLabel'>
+        <label htmlFor="fileInput">Charger un middleware :</label>
+        <input
+          type="file"
+          accept=".js"
+          multiple
+          name='fileInput'
+          id='fileInput'
+          onChange={handleFilesChange}
+        />
+      </div>
+
 
       {loadedFiles.length > 0 ? (
         <>
@@ -84,9 +88,8 @@ const MiddlewareManager = ({ setMiddlewares }) => {
             {loadedFiles.map((fileName, index) => (
               <li key={index}>
                 {fileName}
-                <button
+                <button className='link'
                   onClick={() => handleRemoveMiddleware(index)}
-                  style={{ marginLeft: '10px', color: 'red' }}
                 >
                   Supprimer
                 </button>
@@ -94,12 +97,12 @@ const MiddlewareManager = ({ setMiddlewares }) => {
             ))}
           </ul>
 
-          <button onClick={handleResetMiddlewares}>
+          <button className='reinit' onClick={handleResetMiddlewares}>
             Réinitialiser tous
           </button>
         </>
       ) : (
-        <p>Aucun middleware chargé.</p>
+        <p className='warning'>Aucun middleware chargé.</p>
       )}
     </div>
   );
