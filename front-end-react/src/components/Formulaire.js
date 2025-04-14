@@ -8,10 +8,19 @@ const FormulaireAPI = () => {
     const [errorCinqCent, seterrorCinqCent] = useState(0);
     const [unknowError, setUnknowError] = useState(0);
     const [winRate, setWinRate] = useState(0);
+    const [methode, setMethode] = useState("GET");
+    const [body, setBody] = useState("");
 
+    const estInputActif = !(methode === "GET" || methode === "DELETE");
+
+    //change le taux de succès au fur et a mesure des requêtes
     useEffect(() => {
         setWinRate(sentCount > 0 ? (successCount / sentCount) * 100 : 0);
     }, [sentCount, successCount]);
+    //reset le champ body à 0 si le select change pour get et delete
+    useEffect(() => {
+        if (!estInputActif) {setBody("");}
+        }, [estInputActif]);
 
     function request_api() {
         const url = document.querySelector('.url input').value;
@@ -40,7 +49,8 @@ const FormulaireAPI = () => {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json;charset=utf-8'
-                    }
+                    },
+                    ...(estInputActif && { body: body })
                 })
                     .then(async response => {
                         console.log(response.status)
@@ -73,13 +83,27 @@ const FormulaireAPI = () => {
 
             <div className="containerLabel method">
                 <label htmlFor="methode">Méthode : </label>
-                <select name="methode" id="methode">
+                <select name="methode" 
+                    id="methode"
+                    value={methode}
+                    onChange={(e) => setMethode(e.target.value)}>
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
                     <option value="PUT">PUT</option>
                     <option value="DELETE">DELETE</option>
                     <option value="PATCH">PATCH</option>
                 </select>
+            </div>
+            <div className="containerLabel corps">
+                <label>Corps de la requête</label>
+                <input type="text" 
+                name="corps" 
+                placeholder="Entrez le corps de la requête" 
+                id="corps" 
+                disabled={!estInputActif}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                />
             </div>
 
             <div className="containerLabel time">
