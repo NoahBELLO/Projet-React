@@ -12,6 +12,7 @@ const MiddlewareManager = ({ setMiddlewares }) => {
         console.warn(`Le middleware "${file.name}" est déjà chargé.`);
         continue;
       }
+      
 
       try {
         const rawCode = await readFileAsText(file);

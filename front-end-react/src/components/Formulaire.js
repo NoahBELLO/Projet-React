@@ -11,6 +11,8 @@ const FormulaireAPI = () => {
     const [methode, setMethode] = useState("GET");
     const [body, setBody] = useState("");
 
+
+
     const estInputActif = !(methode === "GET" || methode === "DELETE");
 
     //change le taux de succès au fur et a mesure des requêtes
@@ -133,6 +135,7 @@ const FormulaireAPI = () => {
 const FormulaireMiddleware = () => {
     const [middlewares, setMiddlewares] = useState([]);
     const [result, setResult] = useState(null);
+    const [nbRequests, setNbRequests] = useState(10);
 
     const testMiddlewares = async () => {
         let req = {
@@ -155,7 +158,7 @@ const FormulaireMiddleware = () => {
         try {
             // Envoi réel de la requête
             let response;
-            const informations = JSON.parse(req.options.body);
+            const informations = req.options.body ? JSON.parse(req.options.body) : {};
             if (req.url === "/api/challenge") {
                 response = await fetch(`/api/challenge`, {
                     method: 'POST',
@@ -201,7 +204,7 @@ const FormulaireMiddleware = () => {
         }
     };
 
-    const launchLoadTest = async (count = 10) => {
+    const launchLoadTest = async (count) => {
         const stats = {
             total: 0,
             success: 0,
@@ -270,9 +273,22 @@ const FormulaireMiddleware = () => {
                 <button onClick={testMiddlewares} className='lien'>
                     Tester les middlewares
                 </button>
-                <button onClick={() => launchLoadTest(10)} className='lien'>
-                    Lancer un test de charge (10 requêtes)
+                <div className="containerLabel">
+                    <label htmlFor="nbReq">Nombre de requêtes :</label>
+                    <input
+                        type="number"
+                        id="nbReq"
+                        value={nbRequests}
+                        onChange={(e) => setNbRequests(parseInt(e.target.value))}
+                        placeholder="10"
+                        min="1"
+                    />
+                </div>
+
+                <button onClick={() => launchLoadTest(nbRequests)} className='lien'>
+                    Lancer un test de charge ({nbRequests} requêtes)
                 </button>
+
             </div>
 
             {result && (
