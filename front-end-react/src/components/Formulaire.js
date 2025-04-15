@@ -19,8 +19,8 @@ const FormulaireAPI = () => {
     }, [sentCount, successCount]);
     //reset le champ body à 0 si le select change pour get et delete
     useEffect(() => {
-        if (!estInputActif) {setBody("");}
-        }, [estInputActif]);
+        if (!estInputActif) { setBody(""); }
+    }, [estInputActif]);
 
     function request_api() {
         const url = document.querySelector('.url input').value;
@@ -63,9 +63,9 @@ const FormulaireAPI = () => {
                         }
                         return response.json();
                     })
-                    
+
                     .catch(error => {
-            
+
                         console.error("Erreur réseau :", error);
                         setUnknowError(prev => prev + 1);
                     });
@@ -83,7 +83,7 @@ const FormulaireAPI = () => {
 
             <div className="containerLabel method">
                 <label htmlFor="methode">Méthode : </label>
-                <select name="methode" 
+                <select name="methode"
                     id="methode"
                     value={methode}
                     onChange={(e) => setMethode(e.target.value)}>
@@ -96,13 +96,13 @@ const FormulaireAPI = () => {
             </div>
             <div className="containerLabel corps">
                 <label>Corps de la requête</label>
-                <input type="text" 
-                name="corps" 
-                placeholder="Entrez le corps de la requête" 
-                id="corps" 
-                disabled={!estInputActif}
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
+                <input type="text"
+                    name="corps"
+                    placeholder="Entrez le corps de la requête"
+                    id="corps"
+                    disabled={!estInputActif}
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
                 />
             </div>
 
@@ -139,7 +139,8 @@ const FormulaireMiddleware = () => {
             url: "http://217.154.21.85:8447/hello",
             options: {
                 method: "GET",
-                headers: {}
+                headers: {},
+                mode: "no-cors"
             },
             context: {}
         };
@@ -150,14 +151,37 @@ const FormulaireMiddleware = () => {
         }
 
         console.log("Requête après middlewares :", req);
-        
+        console.log("Requête après middlewares option :", req.headers);
+        console.log("Requête après middlewares option :", req.url);
+
         try {
             // Envoi réel de la requête
-            const response = await fetch(req.url, {
-                ...req.options,
-                mode: "no-cors"
-            });
-
+            let response;
+            if (req.url === "/api/challenge") {
+                response = await fetch(`/api/challenge`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        challenge: 'test',
+                        nonce: '338'
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Succès:', data);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+            else {
+                response = await fetch(req.url, {
+                    ...req.options,
+                    mode: "no-cors"
+                });
+            }
 
             // Essaie de parser le résultat (texte ou JSON)
             const contentType = response.headers.get('content-type');

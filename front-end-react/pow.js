@@ -34,16 +34,19 @@ export default async function pow(req, res, next) {
     req.context.powHash = hash;
     req.context.elapsed = (end - start).toFixed(1) + " ms";
 
-    req.url = "http://217.154.21.85:8447/api/challenge";
-    req.options.method = "POST";
-    req.options.headers = {
-        "Content-Type": "application/json"
-    };
-    req.options.body = JSON.stringify({
-        challenge,
-        nonce
-    });
+    req.url = "/api/challenge";
 
+    req.options = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            challenge,
+            nonce
+        })
+    };
+    
     console.log("Preuve trouvée :", nonce);
     console.log("Hash :", hash);
     console.log("Temps :", req.context.elapsed);
