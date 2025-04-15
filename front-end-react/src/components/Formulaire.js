@@ -151,12 +151,11 @@ const FormulaireMiddleware = () => {
         }
 
         console.log("Requête après middlewares :", req);
-        console.log("Requête après middlewares option :", req.headers);
-        console.log("Requête après middlewares option :", req.url);
 
         try {
             // Envoi réel de la requête
             let response;
+            const informations = JSON.parse(req.options.body);
             if (req.url === "/api/challenge") {
                 response = await fetch(`/api/challenge`, {
                     method: 'POST',
@@ -164,17 +163,10 @@ const FormulaireMiddleware = () => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        challenge: 'test',
-                        nonce: '338'
+                        challenge: informations.challenge,
+                        nonce: informations.nonce
                     })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Succès:', data);
-                    })
-                    .catch(error => {
-                        console.error('Erreur:', error);
-                    });
+                });
             }
             else {
                 response = await fetch(req.url, {
