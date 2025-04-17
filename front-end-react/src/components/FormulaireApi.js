@@ -52,7 +52,7 @@ const FormulaireApi = () => {
                 }]
             }));
         }
-    }, [successCount, errorQuatreCent, errorCinqCent, unknowError]);
+    }, [successCount, errorQuatreCent, errorCinqCent, unknowError, sentCount]);
 
     function request_api() {
         const url = document.querySelector('.url input').value;
