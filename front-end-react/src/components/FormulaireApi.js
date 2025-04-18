@@ -62,7 +62,7 @@ const FormulaireApi = () => {
 
         if (!url || !method || isNaN(delay) || isNaN(amount)) {
             alert("Veuillez remplir tous les champs correctement !");
-        
+
         }
 
         setSentCount(0);
@@ -82,7 +82,8 @@ const FormulaireApi = () => {
                     headers: {
                         'Content-Type': 'application/json;charset=utf-8'
                     },
-                    ...(estInputActif && { body: body })
+                    ...(estInputActif && { body: body }),
+                    mode: 'no-cors',
                 })
                     .then(async response => {
                         console.log(response.status)
@@ -96,7 +97,12 @@ const FormulaireApi = () => {
                         else {
                             setUnknowError(prev => prev + 1);
                         }
-                        return response.json();
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.includes("application/json")) {
+                            return response.json();
+                        } else {
+                            return {};
+                        }
                     })
 
                     .catch(error => {
