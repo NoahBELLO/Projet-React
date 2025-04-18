@@ -56,7 +56,8 @@ const FormulaireApi = () => {
         }
     }, [successCount, errorTroisCent, errorQuatreCent, errorCinqCent, unknowError, sentCount]);
 
-    function request_api() {
+    function request_api(e) {
+        e.preventDefault(); // 👈 empêche le rechargement de la page
         const url = document.querySelector('.url input').value;
         const method = document.querySelector('.method select').value;
         const delay = parseInt(document.querySelector('.time input').value);
@@ -64,7 +65,7 @@ const FormulaireApi = () => {
 
         if (!url || !method || isNaN(delay) || isNaN(amount)) {
             alert("Veuillez remplir tous les champs correctement !");
-
+            return;
         }
 
         setSentCount(0);
@@ -79,7 +80,6 @@ const FormulaireApi = () => {
         for (let i = 0; i < amount; i++) {
             setTimeout(() => {
                 setSentCount(prev => prev + 1);
-
                 fetch(url, {
                     method: method,
                     headers: {
@@ -89,7 +89,6 @@ const FormulaireApi = () => {
                     ...(estInputActif && { body: body })
                 })
                     .then(async response => {
-                        console.log("Status : ", response.status);
                         if (response.status >= 400 && response.status < 500) {
                             seterrorQuatreCent(prev => prev + 1);
                         } else if (response.status >= 500) {
