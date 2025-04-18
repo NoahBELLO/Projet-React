@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Graphique from './Graphique';
+import MiddlewareManager from './MiddlewareManager';
 
 const FormulaireApi = () => {
     const [donneesGraphique, setDonneesGraphique] = useState({
@@ -17,6 +18,7 @@ const FormulaireApi = () => {
             hoverOffset: 4
         }]
     });
+    const [middlewares, setMiddlewares] = useState([]);
     const [sentCount, setSentCount] = useState(0);
     const [successCount, setSuccessCount] = useState(0);
     const [errorTroisCent, seterrorTroisCent] = useState(0);
@@ -56,35 +58,33 @@ const FormulaireApi = () => {
         }
     }, [successCount, errorTroisCent, errorQuatreCent, errorCinqCent, unknowError, sentCount]);
 
-    async function generatePoW(fingerprint, timestamp, difficulty = 4) {
-        const prefix = '0'.repeat(difficulty);
-        let nonce = 0;
-        let hash = '';
-    
-        while (true) {
-            const data = fingerprint + timestamp + nonce;
-            const encoder = new TextEncoder();
-            const buffer = encoder.encode(data);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-            if (hash.startsWith(prefix)) {
-                return { nonce: nonce.toString(), hash };
-            }
-    
-            nonce++;
+    const testMiddlewares = async () => {
+        let req = {
+            url: ""
+        };
+
+        // Appliquer les middlewares un par un
+        for (const mw of middlewares) {
+            await mw(req, null, () => { });
         }
-    }
 
+        console.log("Requête après middlewares :", req);
+        return req;
+    };
 
-    
     async function request_api(e) {
         e.preventDefault(); // 👈 empêche le rechargement de la page
+        let req;
         const url = document.querySelector('.url input').value;
         const method = document.querySelector('.method select').value;
         const delay = parseInt(document.querySelector('.time input').value);
         const amount = parseInt(document.querySelector('.quantite input').value);
+        const fichier = document.querySelector('#fileInput');
+
+        if (fichier && fichier.files.length > 0) {
+            console.log("dans le fichier")
+            req = await testMiddlewares();
+        }
 
         if (!url || !method || isNaN(delay) || isNaN(amount)) {
             alert("Veuillez remplir tous les champs correctement !");
@@ -100,50 +100,74 @@ const FormulaireApi = () => {
 
         const interval = delay / amount;
 
-        
-        
-        const timestamp = Date.now().toString();
-        const fingerprint = "mon_fingerprint_test"; // ou généré dynamiquement
-        const difficulty = 4; // à ajuster selon currentPowLevel côté serveur
-
-        const { nonce, hash } = await generatePoW(fingerprint, timestamp, difficulty);
-
-
         for (let i = 0; i < amount; i++) {
             setTimeout(() => {
                 setSentCount(prev => prev + 1);
-                fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json;charset=utf-8',
-                        'x-timestamp': timestamp,
-                        'x-fingerprint': fingerprint,
-                        'x-pow-solution': hash,
-                        'x-pow-nonce': nonce,
-                    },
-                    
-                    ...(estInputActif && { body: body })
-                })
-                    .then(async response => {
-                        if (response.status >= 400 && response.status < 500) {
-                            seterrorQuatreCent(prev => prev + 1);
-                        } else if (response.status >= 500) {
-                            seterrorCinqCent(prev => prev + 1);
-                        } else if (response.status === 200) {
-                            setSuccessCount(prev => prev + 1);
-                        } else if (response.status >= 300 && response.status < 400) {
-                            seterrorTroisCent(prev => prev + 1);
-                        }
-                        else {
-                            setUnknowError(prev => prev + 1);
-                        }
-                        return;
-                    })
 
-                    .catch(error => {
-                        console.error("Erreur réseau :", error);
-                        setUnknowError(prev => prev + 1);
-                    });
+                if (req?.url) {
+                    console.log("Requete 111 : ", req);
+                    fetch(req.url, {
+                        method: req.method,
+                        headers: req.headers,
+
+                        ...(estInputActif && { body: body })
+                    })
+                        .then(async response => {
+                            if (response.status >= 400 && response.status < 500) {
+                                seterrorQuatreCent(prev => prev + 1);
+                            } else if (response.status >= 500) {
+                                seterrorCinqCent(prev => prev + 1);
+                            } else if (response.status === 200) {
+                                setSuccessCount(prev => prev + 1);
+                            } else if (response.status >= 300 && response.status < 400) {
+                                seterrorTroisCent(prev => prev + 1);
+                            }
+                            else {
+                                setUnknowError(prev => prev + 1);
+                            }
+                            return;
+                        })
+
+                        .catch(error => {
+                            console.error("Erreur réseau :", error);
+                            setUnknowError(prev => prev + 1);
+                        });
+                }
+
+                else {
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8',
+                            // 'x-timestamp': timestamp,
+                            // 'x-fingerprint': fingerprint,
+                            // 'x-pow-solution': hash,
+                            // 'x-pow-nonce': nonce,
+                        },
+
+                        ...(estInputActif && { body: body })
+                    })
+                        .then(async response => {
+                            if (response.status >= 400 && response.status < 500) {
+                                seterrorQuatreCent(prev => prev + 1);
+                            } else if (response.status >= 500) {
+                                seterrorCinqCent(prev => prev + 1);
+                            } else if (response.status === 200) {
+                                setSuccessCount(prev => prev + 1);
+                            } else if (response.status >= 300 && response.status < 400) {
+                                seterrorTroisCent(prev => prev + 1);
+                            }
+                            else {
+                                setUnknowError(prev => prev + 1);
+                            }
+                            return;
+                        })
+
+                        .catch(error => {
+                            console.error("Erreur réseau :", error);
+                            setUnknowError(prev => prev + 1);
+                        });
+                }
             }, i * interval);
         }
     }
@@ -189,6 +213,11 @@ const FormulaireApi = () => {
             <div className="containerLabel quantite">
                 <label htmlFor="quantite">Quantité : </label>
                 <input type="text" name="quantite" placeholder="Nombre requete" id="quantite" />
+            </div>
+
+            <div>
+                <p>{middlewares.length} middleware(s) chargé(s)</p>
+                <MiddlewareManager setMiddlewares={setMiddlewares} />
             </div>
 
             <button className="lien" type="submit" onClick={request_api}>Lancer le test</button>

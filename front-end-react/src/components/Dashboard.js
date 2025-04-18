@@ -7,8 +7,8 @@ function Dashboard() {
         <div className="container dashboard">
             <div className="dashboard-buttons">
                 <button onClick={() => setChoixFormulaire("formulaireAPI")} className="lien">Tester une API</button>
-                <p id="choix">OU</p>
-                <button onClick={() => setChoixFormulaire("formulaireMiddleware")} className="lien">Tester un Middleware</button>
+               {/*  <p id="choix">OU</p>
+                <button onClick={() => setChoixFormulaire("formulaireMiddleware")} className="lien">Tester un Middleware</button> */}
             </div>
 
             {choixFormulaire && <Formulaire choixFormulaire={choixFormulaire} />}
