@@ -3,12 +3,13 @@ import Graphique from './Graphique';
 
 const FormulaireApi = () => {
     const [donneesGraphique, setDonneesGraphique] = useState({
-        labels: ["Succès", "Erreurs 4xx", "Erreurs 5xx", "Erreurs inconnues"],
+        labels: ["Succès", "Erreurs 3xx", "Erreurs 4xx", "Erreurs 5xx", "Erreurs inconnues"],
         datasets: [{
             label: 'Statistiques',
             data: [],
             backgroundColor: [
                 "rgb(76, 175, 80)",
+                "rgb(3, 169, 244)",
                 "rgb(255, 160, 7)",
                 "rgb(174, 54, 244)",
                 "rgb(252, 8, 8)"
@@ -88,7 +89,7 @@ const FormulaireApi = () => {
                     ...(estInputActif && { body: body })
                 })
                     .then(async response => {
-                        console.log(response.status)
+                        console.log("Status : ", response.status);
                         if (response.status >= 400 && response.status < 500) {
                             seterrorQuatreCent(prev => prev + 1);
                         } else if (response.status >= 500) {
