@@ -62,7 +62,7 @@ const FormulaireApi = () => {
 
         if (!url || !method || isNaN(delay) || isNaN(amount)) {
             alert("Veuillez remplir tous les champs correctement !");
-            return;
+        
         }
 
         setSentCount(0);
@@ -90,8 +90,11 @@ const FormulaireApi = () => {
                             seterrorQuatreCent(prev => prev + 1);
                         } else if (response.status >= 500) {
                             seterrorCinqCent(prev => prev + 1);
-                        } else {
+                        } else if (response.status === 200) {
                             setSuccessCount(prev => prev + 1);
+                        }
+                        else {
+                            setUnknowError(prev => prev + 1);
                         }
                         return response.json();
                     })
