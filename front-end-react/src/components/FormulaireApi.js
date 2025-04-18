@@ -18,6 +18,7 @@ const FormulaireApi = () => {
     });
     const [sentCount, setSentCount] = useState(0);
     const [successCount, setSuccessCount] = useState(0);
+    const [errorTroisCent, seterrorTroisCent] = useState(0);
     const [errorQuatreCent, seterrorQuatreCent] = useState(0);
     const [errorCinqCent, seterrorCinqCent] = useState(0);
     const [unknowError, setUnknowError] = useState(0);
@@ -40,7 +41,7 @@ const FormulaireApi = () => {
     useEffect(() => {
         if (sentCount === 0) return;
 
-        const nouvellesDonnees = [successCount, errorQuatreCent, errorCinqCent, unknowError];
+        const nouvellesDonnees = [successCount, errorTroisCent, errorQuatreCent, errorCinqCent, unknowError];
         const total = nouvellesDonnees.reduce((acc, val) => acc + val, 0);
 
         if (total > 0) {
@@ -52,7 +53,7 @@ const FormulaireApi = () => {
                 }]
             }));
         }
-    }, [successCount, errorQuatreCent, errorCinqCent, unknowError, sentCount]);
+    }, [successCount, errorTroisCent, errorQuatreCent, errorCinqCent, unknowError, sentCount]);
 
     function request_api() {
         const url = document.querySelector('.url input').value;
@@ -67,6 +68,7 @@ const FormulaireApi = () => {
 
         setSentCount(0);
         setSuccessCount(0);
+        seterrorTroisCent(0);
         seterrorQuatreCent(0);
         seterrorCinqCent(0);
         setUnknowError(0);
@@ -82,6 +84,7 @@ const FormulaireApi = () => {
                     headers: {
                         'Content-Type': 'application/json;charset=utf-8'
                     },
+                    
                     ...(estInputActif && { body: body })
                 })
                     .then(async response => {
@@ -92,15 +95,16 @@ const FormulaireApi = () => {
                             seterrorCinqCent(prev => prev + 1);
                         } else if (response.status === 200) {
                             setSuccessCount(prev => prev + 1);
+                        } else if (response.status >= 300 && response.status < 400) {
+                            seterrorTroisCent(prev => prev + 1);
                         }
                         else {
                             setUnknowError(prev => prev + 1);
                         }
-                        return response.json();
+                        return;
                     })
 
                     .catch(error => {
-
                         console.error("Erreur réseau :", error);
                         setUnknowError(prev => prev + 1);
                     });
