@@ -56,7 +56,30 @@ const FormulaireApi = () => {
         }
     }, [successCount, errorTroisCent, errorQuatreCent, errorCinqCent, unknowError, sentCount]);
 
-    function request_api(e) {
+    async function generatePoW(fingerprint, timestamp, difficulty = 4) {
+        const prefix = '0'.repeat(difficulty);
+        let nonce = 0;
+        let hash = '';
+    
+        while (true) {
+            const data = fingerprint + timestamp + nonce;
+            const encoder = new TextEncoder();
+            const buffer = encoder.encode(data);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+            if (hash.startsWith(prefix)) {
+                return { nonce: nonce.toString(), hash };
+            }
+    
+            nonce++;
+        }
+    }
+
+
+    
+    async function request_api(e) {
         e.preventDefault(); // 👈 empêche le rechargement de la page
         const url = document.querySelector('.url input').value;
         const method = document.querySelector('.method select').value;
@@ -77,13 +100,26 @@ const FormulaireApi = () => {
 
         const interval = delay / amount;
 
+        
+        
+        const timestamp = Date.now().toString();
+        const fingerprint = "mon_fingerprint_test"; // ou généré dynamiquement
+        const difficulty = 4; // à ajuster selon currentPowLevel côté serveur
+
+        const { nonce, hash } = await generatePoW(fingerprint, timestamp, difficulty);
+
+
         for (let i = 0; i < amount; i++) {
             setTimeout(() => {
                 setSentCount(prev => prev + 1);
                 fetch(url, {
                     method: method,
                     headers: {
-                        'Content-Type': 'application/json;charset=utf-8'
+                        'Content-Type': 'application/json;charset=utf-8',
+                        'x-timestamp': timestamp,
+                        'x-fingerprint': fingerprint,
+                        'x-pow-solution': hash,
+                        'x-pow-nonce': nonce,
                     },
                     
                     ...(estInputActif && { body: body })
