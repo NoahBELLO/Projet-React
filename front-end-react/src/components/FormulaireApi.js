@@ -63,7 +63,7 @@ const FormulaireApi = () => {
 
         if (!url || !method || isNaN(delay) || isNaN(amount)) {
             alert("Veuillez remplir tous les champs correctement !");
-        
+
         }
 
         setSentCount(0);
